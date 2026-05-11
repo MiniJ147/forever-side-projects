@@ -7,3 +7,9 @@ Time: 7:52pm
 
 **Purpose**  
 Interested in how tick systems work in games and why should be cooool
+
+**Build**
+```
+gcc tick.c
+./a.out
+```
