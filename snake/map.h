@@ -47,6 +47,8 @@ void map_destroy(Map* map)
     free(map->render);
 }
 
+// TODO: this will infinite loop once the spots run out and due to the tick order we don't have a win state
+//       this should be fixed and also performance will get worse as spots shrink due to conflicts. 
 void map_spawn_apple(Map* map)
 {
     srand(time(NULL));

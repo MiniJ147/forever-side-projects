@@ -3,10 +3,9 @@ Experiment ideas:
 1) run for a specific number of seconds. Does theortical ticks equal the true ticks. If not why not?
 2) do you get more performance from sleeping inbetween dt calls and if so at what differintal? Does accuracy change (experiment 1)?
 */
-#include <_time.h>
 #include <math.h>
-#include <stdio.h>
 #include <time.h>
+#include <stdio.h>
 
 static inline double calculate_dt(double ticks_per_second)
 {
@@ -63,6 +62,8 @@ int main(){
    
 
     clock_gettime(CLOCK_REALTIME, &simulation_start);
+
+    // <= not < because it gets a free tick
     while(tick_total <= simulation_time_tick){
         if(!should_update(&time_past, tick_dt)){
             continue;

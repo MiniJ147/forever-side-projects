@@ -78,6 +78,8 @@ int main(){
 
         map_render(map);
 
+
+        // TODO: change input logic out for a clean function
         char new_dir = read_input_timeout(100);
 
         switch(new_dir)
