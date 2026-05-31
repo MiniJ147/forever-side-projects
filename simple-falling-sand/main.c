@@ -2,14 +2,17 @@
 #include <stdint.h>
 #include <string.h>
 #include "types.h"
+#include "tick.h"
 
 const int BLOCK_SIZE = 6; 
 
 const char* TILE_STRINGS[] = {
     "\e[40m", // air
     "\e[43m", // sand 
-    "\e[44m" // water
+    "\e[44m" // water 
 };
+
+const char* CLEAR_BACKGROUND = "\e[00m";
 
 const uint8_t AIR_ID = 0;
 const uint8_t SAND_ID = 1;
@@ -37,7 +40,7 @@ static inline int map_index(int x, int y)
 
 void update_render()
 {
-    int render_curr = AIR_ID;
+    int render_curr = -1; // set invalid to prevent fragments
     int render_pos = 0;
 
     for(int y=0; y<MAP_HEIGHT; y++)
@@ -45,6 +48,8 @@ void update_render()
         for(int x=0; x<MAP_WIDTH; x++)
         {
             uint8_t tile_curr = map_data[map_index(x,y)];
+            
+            // update loop to change background color
             for(int c = 0; c < BLOCK_SIZE-1 && render_curr != tile_curr; c++)
             {
                 map_render[render_pos++] = TILE_STRINGS[tile_curr][c];
@@ -63,6 +68,7 @@ int main()
 {
     clear_screen();
 
+    // fill with default
     for(int y=0; y<MAP_HEIGHT; y++)
     {
         for(int x=0; x<MAP_WIDTH; x++)
@@ -70,10 +76,43 @@ int main()
             map_data[map_index(x,y)] = AIR_ID;
         }
     }
-    map_data[1] = SAND_ID;
-    map_data[3] = WATER_ID;
 
-    update_render();
-    printf("\033[0;0H%s",map_render);
+    const int TICKS_PER_SECOND = 200;
+    const double tick_dt = tick_calculate_dt(TICKS_PER_SECOND);
+
+    struct timespec tick_timer;
+    clock_gettime(CLOCK_REALTIME, &tick_timer);
+
+    map_data[2] = SAND_ID;
+    map_data[3] = WATER_ID;
+    map_data[4] = SAND_ID;
+    for(;;){
+        if(!tick_should_update(&tick_timer, tick_dt)){
+            continue;
+        }
+
+        for(int y=MAP_HEIGHT-1; y>=0; y--)
+        {
+            for(int x=MAP_WIDTH; x>=0; x--)
+            {
+                int id = map_data[map_index(x,y)];
+                switch(id){
+                    case SAND_ID:
+                        if(y+1 < MAP_HEIGHT && map_data[map_index(x,y+1)] != SAND_ID){
+                            int t = map_data[map_index(x,y)];
+                            map_data[(map_index(x,y))] = map_data[(map_index(x,y+1))];
+                            map_data[(map_index(x,y+1))] = t;
+                        }
+                    break;
+                    case WATER_ID:
+                    break;
+                }
+            }
+        }
+
+        update_render();
+        printf("\033[0;0H%s",map_render);
+    }
+
     return 0;
 }
