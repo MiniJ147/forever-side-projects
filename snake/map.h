@@ -47,20 +47,26 @@ void map_destroy(Map* map)
     free(map->render);
 }
 
-// TODO: this will infinite loop once the spots run out and due to the tick order we don't have a win state
-//       this should be fixed and also performance will get worse as spots shrink due to conflicts. 
 void map_spawn_apple(Map* map)
 {
     srand(time(NULL));
-    
-    UVec2 pos;
-    do
-    {
-        pos.x = rand() % map->width;
-        pos.y = rand() % map->height;
-    }while(map_get_tile(map, pos) != MAP_TILE_EMPTY);
+    u32 m_w = map->width;
+    u32 m_h = map->height;
 
-    map_set_tile(map, pos, MAP_TILE_APPLE);
+    int x = rand() % m_w;
+    int y = rand() % m_h;
+
+    for(int i=0; i<m_w; i++){
+        x = (x+1) % m_w;
+        for(int j=0; j<m_h; j++){
+            y = (y + 1) % m_h;
+            UVec2 p = {x,y};
+            if(map_get_tile(map, p) == MAP_TILE_EMPTY){
+                map_set_tile(map, p, MAP_TILE_APPLE);
+                return;
+            }
+        }
+    }
 }
 
 Map map_create(u32 width, u32 height)

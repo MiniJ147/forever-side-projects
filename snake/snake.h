@@ -11,18 +11,41 @@ const char SNAKE_DIR_RIGHT = 'd';
 const int SNAKE_DEAD = 0;
 const int SNAKE_ALIVE = 1;
 
-typedef struct 
+// Node for body control (linked-list queue)
+typedef struct Node Node;
+struct Node
+{
+    UVec2 pos;
+    Node* next;
+};
+
+Node* node_create(UVec2 pos, Node* next)
+{
+    Node* c = (Node*)malloc(sizeof(Node));
+    c->pos = pos;
+    c->next = next;
+    return c;
+}
+
+void node_free(Node* node)
+{
+    free(node);
+}
+
+typedef struct Snake Snake;
+struct Snake
 {
     UVec2* body;
     u32 body_size_max;
 
     // queue for body
-    u32 queue_head;
-    u32 queue_tail;
+    Node* q_head;
+    Node* q_tail;
     u32 queue_size;
 
     char dir;
-} Snake;
+};
+
 
 Snake snake_create(u32 snake_max_size)
 {
@@ -40,11 +63,12 @@ Snake snake_create(u32 snake_max_size)
     snake.body_size_max = snake_max_size;
 
     // setting body init size
-    snake.queue_size = 1;
-    snake.body[0] = (UVec2){2,2};
+    snake.queue_size = 2;
+    Node* snake_head = node_create((UVec2){2,2}, NULL);
+    Node* snake_tail = node_create((UVec2){1,2}, snake_head);
 
-    snake.queue_head = 0;
-    snake.queue_tail = 1;
+    snake.q_head = snake_tail;
+    snake.q_tail = snake_head;
 
     // set inti direction
     snake.dir = SNAKE_DIR_RIGHT;
@@ -55,32 +79,54 @@ Snake snake_create(u32 snake_max_size)
 void snake_destroy(Snake* snake)
 {
     free(snake->body);
+
+    Node* curr = snake->q_head;
+    while(curr != NULL)
+    {
+        Node* old = curr;
+        curr = curr->next;
+        free(old);
+    }
 }
 
+// the queue tail is the head of the snake
 UVec2 snake_get_head(Snake* snake)
 {
-    return snake->body[(snake->queue_tail - 1) % snake->body_size_max];
+    return snake->q_tail->pos;
 }
 
-void snake_add_body(Snake* snake, UVec2 new_loc)
+// We grab the tail (q_head) of the snake and put it in the front (q_tail)
+// while advancing the queue 
+// Does not validate move, but just performs it
+void snake_move_body(Snake* snake, Map* map, UVec2 new_pos)
 {
-    // add to queue
-    u32 new_idx = snake->queue_tail;
-    snake->body[new_idx] = new_loc;
+    Node* s_tail = snake->q_head; 
+    map_set_tile(map, s_tail->pos, MAP_TILE_EMPTY); // clear old tail
+    map_set_tile(map, new_pos, MAP_TILE_SNAKE_BODY); // put new pos
 
-    snake->queue_size += 1;
-    snake->queue_tail = (snake->queue_tail + 1) % snake->body_size_max;
+    // move head forward
+    snake->q_head = s_tail->next;
+
+    // update s_tail
+    s_tail->pos = new_pos;
+    s_tail->next = NULL;
+
+    // update stored q_tail
+    snake->q_tail->next = s_tail;
+    snake->q_tail = s_tail;
 }
 
-UVec2 snake_pop_tail(Snake* snake)
+void snake_eat_apple(Snake* snake, Map* map, UVec2 apple_pos)
 {
-    u32 idx = snake->queue_head;
-    UVec2 res = snake->body[idx];
+    Node* new_body = node_create(apple_pos, NULL);
+    map_set_tile(map, apple_pos, MAP_TILE_SNAKE_BODY);
+    snake->queue_size++;
 
-    snake->queue_head = (idx + 1) % snake->body_size_max;
-    snake->queue_size -= 1;
+    // update snake head
+    snake->q_tail->next = new_body;
+    snake->q_tail = new_body;
 
-    return res;
+    map_spawn_apple(map);
 }
 
 /* 
@@ -132,17 +178,10 @@ int snake_tick(Snake* snake, Map* map)
         case MAP_TILE_SNAKE_BODY:
             return SNAKE_DEAD;
         case MAP_TILE_APPLE:
-            snake_add_body(snake, new_head);
-            map_set_tile(map, new_head, MAP_TILE_SNAKE_BODY);
-            map_spawn_apple(map);
+            snake_eat_apple(snake, map, new_head);
             break;
         case MAP_TILE_EMPTY: {
-            UVec2 tail_pos = snake_pop_tail(snake);
-            map_set_tile(map, tail_pos, MAP_TILE_EMPTY);
-
-            snake_add_body(snake, new_head);
-
-            map_set_tile(map, new_head, MAP_TILE_SNAKE_BODY);
+            snake_move_body(snake, map, new_head);
             break;
         }
         default: 

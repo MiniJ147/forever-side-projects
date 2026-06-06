@@ -59,12 +59,12 @@ int main(){
     struct timespec tick_timer;
     clock_gettime(CLOCK_REALTIME, &tick_timer);
 
+    const int NUM_APPLES = 2;
     Map map = map_create(10,10);
-    map_spawn_apple(&map);
-    map_spawn_apple(&map);
-    map_spawn_apple(&map);
-    map_spawn_apple(&map);
-    map_spawn_apple(&map);
+    for(int i=0; i<NUM_APPLES; i++)
+    {
+        map_spawn_apple(&map);
+    }
     Snake snake = snake_create(map.width * map.height);
 
     // gameplay loop
@@ -77,7 +77,6 @@ int main(){
             break;
 
         map_render(map);
-
 
         // TODO: change input logic out for a clean function
         char new_dir = read_input_timeout(100);
