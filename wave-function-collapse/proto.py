@@ -2,34 +2,47 @@
 # Goal: generate random islands
 import random
 
+# map dimensions
 MAP_WIDTH = 16; MAP_HEIGHT = 16
 
+# all cells
 CELL_EMPTY = 0
 CELL_SAND = 1
 CELL_WATER = 2
 CELL_GRASS = 3
 CELL_MOUNTAIN = 4
+CELL_MOUNTAIN_SNOWCAP = 5
 
-CELL_OPTIONS = {
+# what a cell be live next to (they can coexist)
+CELL_RULES_COEXIST = {
     CELL_EMPTY: set([CELL_SAND, CELL_WATER, CELL_GRASS, CELL_MOUNTAIN]),
     CELL_WATER: set([CELL_SAND, CELL_WATER]),
-    CELL_SAND: set([CELL_SAND, CELL_WATER, CELL_GRASS]),
+    CELL_SAND: set([CELL_WATER, CELL_GRASS]),
     CELL_GRASS: set([CELL_SAND, CELL_GRASS, CELL_MOUNTAIN]),
-    CELL_MOUNTAIN: set([CELL_GRASS, CELL_MOUNTAIN])
+    CELL_MOUNTAIN: set([CELL_GRASS, CELL_MOUNTAIN]),
+    # CELL_MOUNTAIN_SNOWCAP: set([CELL_MOUNTAIN, CELL_MOUNTAIN_SNOWCAP])
 }
-GREEN = '\033[32m'
-YELLOW = '\033[33m'
-BLUE = '\033[34m'
+
+# what a cell requires to be in its neighborhood
+CELL_RULES_REQUIRE = {
+    CELL_EMPTY: set(),
+    CELL_WATER: set(),
+    CELL_SAND: set([CELL_WATER]),
+    CELL_GRASS: set(),
+    CELL_MOUNTAIN: set(),
+    CELL_MOUNTAIN_SNOWCAP: set()
+}
 
 CELL_CHAR = {
-    CELL_EMPTY: ".",
+    CELL_EMPTY: "\033[31m.",
     CELL_GRASS: "\033[32m#",
     CELL_SAND: "\033[33m#",   
     CELL_WATER: "\033[34m~",
-    CELL_MOUNTAIN: "\033[37m^"
+    CELL_MOUNTAIN: "\033[37m^",
+    CELL_MOUNTAIN_SNOWCAP: "\033[31m^"
 }
 
-CELL_ALL_LIST = CELL_OPTIONS.keys()
+CELL_ALL_LIST = CELL_RULES_COEXIST.keys()
 MAX_ENTROPY = len(CELL_ALL_LIST)
 
 class Cell:
@@ -48,7 +61,7 @@ class Cell:
         reduce_entropy (self, update_cell): takes in a new cell and calculates new entropy
         """
         if self.entropy == 0: return 0
-        self.options = self.options & CELL_OPTIONS[update_cell]
+        self.options = self.options & CELL_RULES_COEXIST[update_cell] 
         self.entropy = len(self.options)
         return self.entropy
         
@@ -125,8 +138,6 @@ def main():
     while m.iter():
         continue
     m.print_map("render")
-
-
 
 if __name__ == "__main__":
     main()
