@@ -15,3 +15,12 @@ You can add entries by appending to the entries array like this:
 }
 ```
 Then target it via (example) `localhost:3000/yt`.
+
+
+On Mac/Linux, instead of putting `localhost` you can map it to `go` by
+```
+sudo vim /etc/hosts
+
+Then adding:
+127.0.0.1   go
+```

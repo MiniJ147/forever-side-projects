@@ -74,7 +74,6 @@ func main() {
 	router := initRoutes()
 	mux := http.NewServeMux()
 
-	// Define a single-segment wildcard named "id"
 	mux.HandleFunc("GET /{id}", router.route)
-	http.ListenAndServe(":3000", mux)
+	http.ListenAndServe(":80", mux)
 }
