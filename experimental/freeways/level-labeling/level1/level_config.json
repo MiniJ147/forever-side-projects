@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "type": "IN",
+      "center": [
+        1100,
+        1041
+      ],
+      "orientation_deg": 3.4
+    },
+    {
+      "id": 1,
+      "type": "OUT",
+      "center": [
+        1616,
+        1765
+      ],
+      "orientation_deg": 83.8
+    }
+  ],
+  "demands": [
+    {
+      "from": 0,
+      "to": 1
+    }
+  ]
+}

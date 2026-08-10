@@ -1,0 +1,68 @@
+{
+  "allow_elevated": true,
+  "nodes": [
+    {
+      "id": 0,
+      "type": "IN",
+      "center": [
+        1620,
+        286
+      ],
+      "orientation_deg": 88.0
+    },
+    {
+      "id": 1,
+      "type": "IN",
+      "center": [
+        2932,
+        960
+      ],
+      "orientation_deg": 178.5
+    },
+    {
+      "id": 2,
+      "type": "IN",
+      "center": [
+        504,
+        1132
+      ],
+      "orientation_deg": 0.9
+    },
+    {
+      "id": 3,
+      "type": "OUT",
+      "center": [
+        568,
+        956
+      ],
+      "orientation_deg": 179.1
+    },
+    {
+      "id": 4,
+      "type": "OUT",
+      "center": [
+        2846,
+        1136
+      ],
+      "orientation_deg": -4.6
+    }
+  ],
+  "demands": [
+    {
+      "from": 0,
+      "to": 3
+    },
+    {
+      "from": 0,
+      "to": 4
+    },
+    {
+      "from": 1,
+      "to": 3
+    },
+    {
+      "from": 2,
+      "to": 4
+    }
+  ]
+}
